@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   MUSE — Design System: "Step Flow / Light" (CLAUDE.md §4.1, LOCKED)
+   These are the exact CSS variable names the spec mandates for the codebase.
+   Do not introduce the rejected "Ink & Brass" dark palette (§4.2) here.
+--------------------------------------------------------------------------- */
+:root {
+  --bg: #f6f6f7; /* page background, light off-white grey */
+  --surface: #ffffff; /* elevated card surface */
+  --text-primary: #14161f; /* near-black navy — also CTA fill */
+  --text-secondary: #8a8d98; /* grey — subtext/labels */
+  --pill-selected-bg: #d6e4f5; /* light blue — selected pill fill */
+  --pill-selected-text: #2c5aa0; /* medium blue — selected pill text */
+  --pill-border: #14161f; /* unselected pill border + text */
+  --track-filled: #14161f; /* progress bar, filled segment */
+  --track-unfilled: #e5e5e7; /* progress bar, unfilled segment */
+  --cta-bg: #14161f; /* primary CTA button fill */
+  --cta-text: #ffffff; /* primary CTA button label */
+  --radius-pill: 999px;
+  --radius-card: 16px;
+}
+
+/* ---------------------------------------------------------------------------
+   Tailwind theme — expose ONLY the tokens above as utilities.
+   `--color-*: initial` clears Tailwind's default palette so the default
+   colors can't be used by accident (per Phase 1 requirement). `inline`
+   makes utilities resolve to var(--…), keeping :root the single source
+   of truth for the palette.
+--------------------------------------------------------------------------- */
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-pill-selected-bg: var(--pill-selected-bg);
+  --color-pill-selected-text: var(--pill-selected-text);
+  --color-pill-border: var(--pill-border);
+  --color-track-filled: var(--track-filled);
+  --color-track-unfilled: var(--track-unfilled);
+  --color-cta: var(--cta-bg);
+  --color-cta-text: var(--cta-text);
+
+  --radius-pill: var(--radius-pill);
+  --radius-card: var(--radius-card);
+
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
