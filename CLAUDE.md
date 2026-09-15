@@ -179,13 +179,26 @@ Next.js runs code in two contexts; keeping this straight matters for security:
 ### 5.2 Data layer — Supabase/Postgres tables
 
 - `profiles` — one row per authenticated user, linked to Supabase Auth.
-- `itineraries` — one row per generated tour. Foreign-keyed to **either** `user_id` **or** `guest_session_id` (nullable pair — exactly one is set) — this dual-ownership model is what makes guest checkout work before account creation.
+- `itineraries` — one row per generated tour. Foreign-keyed to `user_id` (always set — see §5.3, guests are real Supabase Auth users too now).
 - `stops` — child rows per itinerary, referencing MET object IDs (one-to-many from `itineraries`).
 - `purchases` — one row per Stripe payment, status, foreign-keyed to an itinerary.
-- RLS policies required on every table before any real user data flows through them — treat this as real work in Phase 3/early, not boilerplate to rush.
+- RLS policies required on every table before any real user data flows through them — treat this as real work in Phase 3/early, not boilerplate to rush. With guest identity handled via Supabase Anonymous Auth (§5.3), every table's RLS is uniform: `auth.uid() = user_id` (via the `itineraries`/`stops` parent chain for child tables) — no separate guest-vs-authenticated branch needed in any policy.
 
-### 5.3 Guest session identity
+### 5.3 Guest session identity — REVISED 2026-09-14 (supersedes original design below)
+
+**Decision: guest identity is implemented via Supabase Anonymous Auth**, not a hand-rolled `guest_session_id` cookie/column. On first visit, the client signs in anonymously (`supabase.auth.signInAnonymously()`); this creates a real `auth.users` row (flagged `is_anonymous = true`) with a genuine session/JWT, so `auth.uid()` works identically for guests and signed-in users. `itineraries.user_id` is therefore always set — no nullable dual-ownership pair, no custom RLS branch for guests.
+
+**Why this over the originally-planned manual `guest_session_id` column:** a hand-rolled guest token has no cryptographic backing — Postgres RLS can't verify a client-supplied guest ID actually belongs to that client without either (a) routing all guest writes through server-side Route Handlers with the service-role key (bypassing RLS, enforcing ownership in app code instead), or (b) issuing our own signed token, which is what Supabase Anonymous Auth already does for us. It also collapses two build items into one: account creation (Phase 6) becomes an **identity link** on the same anonymous user (same `user_id`, same rows, no migration/re-pointing needed) rather than a separate re-pointing step.
+
+**Session lifetime:** the "guest session should survive ~90 days" requirement (so a paid itinerary isn't lost between museum visits or app reinstalls-on-the-same-device) is handled by Supabase's session refresh token, not a custom cookie `Max-Age`. **Verified 2026-09-14:** project's Authentication → Sessions → Inactivity Timeout is `0` (disabled) and not editable on the free plan — this means no forced inactivity logout applies at all, comfortably exceeding the 90-day requirement with zero config needed. Sessions persist via auto-refresh as long as local storage/cookies aren't cleared; that remaining failure mode (cleared storage, new device, reinstall) is what "Restore purchase via email" below covers.
+
+**"Restore purchase via email" (§2 principle 9, §3.8)** still needs its own recovery path for the case Anonymous Auth doesn't cover — a device switch or cleared storage, where the anonymous session itself is gone. That flow looks up a `purchases` row by the email receipt and re-links it to a *new* anonymous (or signed-in) session; it's a deliberate server-side exception to normal RLS ownership, not something RLS itself can express — implement it as a Route Handler using the service-role client, gated on verifying the email/receipt match server-side.
+
+<details>
+<summary>Original design (superseded, kept for history)</summary>
+
 A random session token (UUID) generated on first visit, stored in a cookie, used as the owner reference on `itineraries`/`purchases` before/unless the person creates an account. On account creation, existing guest-owned rows should be re-pointed to the new `user_id`.
+</details>
 
 ### 5.4 Server-side API endpoints to build
 - **MET API proxy** (`/api/met/...`) — server-side fetch + filter of Met Collection API results (filters for objects with both image and full description present — data completeness is inconsistent, budget real time here); returns cleaned JSON to the client. Caches a candidate pool rather than hitting the live API per-request.
@@ -236,6 +249,9 @@ Reordered from the original numeric draft: data layer + guest session moved up (
 - [ ] Content moderation approach for the free-text "anything else?" input before it reaches the LLM prompt.
 - [ ] Confirm real Met Collection API data completeness (image + description availability) is sufficient across enough objects to support several different interest-combinations reliably before demo day.
 
+**Future direction (not in MVP scope — noted here so it isn't lost):**
+- [ ] Cross-visit personalization: use a signed-in user's interests from past itineraries to personalize a new tour at a *different* museum. Per-visit interest data stays on `itineraries` (the raw event log, added in Phase 4) either way; this would add a separate derived/aggregated profile (e.g. a `user_interest_signals` table or a `jsonb` column on `profiles`, FK'd to `user_id`) summarizing that history, rather than re-deriving it from scratch on every new curation call. Only reachable for users who've actually created a real account (§3.6) — a guest's anonymous session has no durable cross-visit/cross-device identity, so this feature is inherently gated behind account conversion. Don't build the aggregate table speculatively; design it when this feature is actually scoped.
+
 ---
 
 ## 8. Resolved Decisions Log
@@ -247,6 +263,7 @@ Reordered from the original numeric draft: data layer + guest session moved up (
 - **Distribution: web URL + "Add to Home Screen," no App Store for MVP.**
 - **Build order: data layer/guest sessions before screens; account creation after payment**, not in original numeric order — see Section 6.
 - **Account-prompt sheet buttons are bold/filled**, matching the payment sheet's visual weight (Section 3.6) — "Not now" + tap-outside-to-dismiss carry the lower-stakes signal instead of button styling.
+- **Guest identity: Supabase Anonymous Auth, not a hand-rolled `guest_session_id` column/cookie** (2026-09-14) — see §5.3 for the full reasoning. `itineraries`/`purchases`/`stops` RLS is uniform `auth.uid() = user_id` for guests and signed-in users alike; account creation becomes an identity link on the same user row, not a re-pointing migration. Guest session lifetime (~90 days) is a Supabase Auth refresh-token setting to verify, not a cookie `Max-Age` to set.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
