@@ -1,0 +1,20 @@
+//  mapped to our met_objects row shape:
+{
+    // "met_object_id": 560886,
+    // "department_id": 10,
+    // "title": "A fragment of a cubic unknown object, possibly a fragment of a rod",
+    "artist_display_name": null,
+    "culture": null,
+    "medium": "White faience",
+    "object_date": "ca. 1850–1640 B.C.",
+    "credit_line": "Rogers Fund, 1915",
+    "gallery_number": "109",
+    // "primary_image_url": "https://images.metmuseum.org/CRDImages/eg/original/15.3.112_EGDP018154.jpg",
+    "additional_images": [
+        "https://images.metmuseum.org/CRDImages/eg/original/15.3.112_EGDP018153.jpg",
+        "https://images.metmuseum.org/CRDImages/eg/original/15.3.112_EGDP018155.jpg"
+    ],
+    "tags": null,
+    "is_highlight": false,
+    "object_url": "https://www.metmuseum.org/art/collection/search/560886"
+}
