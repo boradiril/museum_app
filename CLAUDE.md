@@ -51,6 +51,17 @@
 - **Optional expandable panel** ("Tell us more about you — optional," with subtext "Pace, group size, and your interests beyond art"): contains pace toggle (Highlights / Go deep, defaults to Highlights), who's-visiting chips (Solo/Couple/Family/Group, defaults to Solo), "beyond art" life-interest chips (Food, Nature, Travel, Mythology, Fashion, etc.), a free-text field ("Anything else? e.g. I'm a chef, I love sci-fi..."), and must-see-artwork search — all consolidated into one panel, not separate collapsibles.
 - Expansion behavior: whole-page scroll (no nested scroll container), sticky/anchored CTA button so it's always reachable, small auto-scroll to bring newly revealed content into view on expand.
 - Free-text input is a real personalization signal for the LLM but carries real risk (prompt injection, moderation) — treat it as one signal among several, never something that overrides core curation logic; apply length limits and basic moderation before it reaches the LLM prompt.
+
+**RESOLVED 2026-09-25 — "What draws you in?" chip list, data-grounded against the actual Phase 3 pool (1,157 objects, 3 departments):**
+- Nine chips: Arms & Weapons, Armor & Shields, Sculpture & Statues, Metalwork/Glass & Fine Materials, Sacred & Religious Art, Animals in Art, Mythology & Legendary Creatures, Royalty & Power, Ancient Egypt.
+- Each chip is a set of keywords matched across `classification` (prefix match), `tags` (exact match), and `object_name`/`medium` (substring match) simultaneously — not a single field. No one field has both full row coverage and low-enough cardinality to serve as a clean chip source alone (`medium`/`object_name` are ~100%/99% populated but hundreds of distinct raw values each; `classification`/`culture`/`tags` are cleaner but only cover 44-67% of rows each, and for non-overlapping subsets — e.g. Egyptian Art objects have null `classification`/`culture` entirely, relying on `object_name`/`period`/`dynasty` instead). Verified live: 97.6% of the pool (1,129/1,157) matches at least one chip; the remaining 28 are a long tail of small, disparate classification types (Tools/bifaces, Manuscripts, Ceramics, Costumes, etc.) not worth chasing further.
+- **"Beyond art" life-interest chips (Food, Nature, Travel, Mythology, Fashion) are dropped for this MVP demo pool** — checked each against the real data; Food/Travel/Fashion have zero or near-zero representation across the 3 seeded departments. No separate "beyond art" chip section will be built; the free-text field covers that kind of personal-interest signal instead (imperfectly, but that's an accepted tradeoff — see below). Revisit if/when more departments are seeded.
+- Free text is explicitly **not** used for its own retrieval/pre-filtering — it's handed to Claude alongside the chip-filtered candidates as a secondary signal that can influence selection *within* that set, but can't surface a candidate outside it. This is a known, accepted limitation (an object matching free text but no selected chip is simply not reachable), consistent with §3.2's "never overrides core curation logic."
+
+**RESOLVED 2026-09-25 — free-text moderation approach:**
+- Length limit: ~280 characters.
+- Mechanism: (1) prompt-structure mitigation — free text is clearly delimited in the `/api/curate` prompt with an explicit instruction not to follow anything embedded within it, the primary defense against prompt injection, zero extra latency/cost since it's part of the one curation call; (2) a lightweight keyword blocklist as a cheap supplementary safety net (obvious slurs/injection phrases). Deliberately **not** using a dedicated moderation classifier call (e.g. a second Haiku call) for MVP — CLAUDE.md's own "basic moderation" wording reads as intentionally proportionate; a dedicated classifier is a real latency/cost tradeoff worth revisiting post-MVP if actual abuse patterns emerge, not building it preemptively.
+- On a blocklist match: **silently drop the free text and proceed with curation using the rest of Step 1's inputs** — no error shown, no error-state UI needed this phase. Chosen over rejecting-with-an-error because free text is already "one signal among several, never something that overrides core curation logic" — losing it silently doesn't break the core flow, and avoids a false positive blocking someone's entire tour generation.
 - Back/"Edit" navigation from the itinerary screen returns here with prior selections preserved, not blank.
 
 ### 3.3 Itinerary Screen (locked preview, pre-payment)
@@ -201,8 +212,24 @@ A random session token (UUID) generated on first visit, stored in a cookie, used
 </details>
 
 ### 5.4 Server-side API endpoints to build
-- **MET API proxy** (`/api/met/...`) — server-side fetch + filter of Met Collection API results (filters for objects with both image and full description present — data completeness is inconsistent, budget real time here); returns cleaned JSON to the client. Caches a candidate pool rather than hitting the live API per-request.
+- **MET candidate pool** — **REVISED in Phase 3 (§7):** not a client-facing proxy route. `scripts/seed-met-objects.mjs` fetches + filters the Met API once, offline, into the `met_objects` table (no "description" field exists in the Met API, contrary to the original plan here — completeness filter is `hasImage AND title AND (medium OR objectDate OR culture) AND creditLine AND GalleryNumber`). `src/lib/met-objects.ts`'s `getCandidateMetObjects()` is the server-only read function `/api/curate` calls directly — no HTTP hop, since the client never needs raw Met data.
 - **LLM curation endpoint** (`/api/curate`) — takes user inputs (from Step 1) + candidate MET objects, calls the Claude API, returns structured itinerary JSON (ranked stops, route order, "Matches: X" tags). Apply basic length/moderation limits to the free-text personalization field before it reaches the prompt (see Section 7).
+
+**Full curation pipeline, decided 2026-09-30 (consolidates §3.2/§5.4/§7 into one flow):**
+```
+Take input from user (chips, time, pace, group, free text)
+  → Cap & screen free text (≤280 chars, delimiting + blocklist, silent-drop if flagged)
+  → Map selected chips → keyword filters (classification prefix / tags exact / object_name+medium substring)
+  → Query met_objects via getCandidateMetObjects() with those filters (+ balanced per-department sampling)
+  → Narrow ~1,157-object pool to a ~100–300 candidate shortlist
+  → Assemble Claude prompt (shortlist + free text as secondary signal + time/pace/group)
+  → Call Claude API
+  → Claude selects & ranks stops to fit time budget, builds route order, tags "Matches: X"
+  → Parse & validate structured JSON response
+  → Write itinerary + stops to DB
+  → Return to client
+  → Itinerary preview shows 3 full stops (breadth-selected across interests) + locked count for the rest
+```
 - **Stripe Checkout + webhook** (`/api/checkout`, `/api/webhooks/stripe`) — creates a Checkout Session server-side; a separate webhook handler receives Stripe's async payment-success callback and marks the itinerary "unlocked" in the DB. Verify the webhook signature — do not trust an unverified callback.
 
 **Deliberately simplified for MVP (be upfront in the product/demo that these are simplifications, not full features):**
@@ -268,6 +295,8 @@ Reordered from the original numeric draft: data layer + guest session moved up (
 - **Build order: data layer/guest sessions before screens; account creation after payment**, not in original numeric order — see Section 6.
 - **Account-prompt sheet buttons are bold/filled**, matching the payment sheet's visual weight (Section 3.6) — "Not now" + tap-outside-to-dismiss carry the lower-stakes signal instead of button styling.
 - **Guest identity: Supabase Anonymous Auth, not a hand-rolled `guest_session_id` column/cookie** (2026-09-14) — see §5.3 for the full reasoning. `itineraries`/`purchases`/`stops` RLS is uniform `auth.uid() = user_id` for guests and signed-in users alike; account creation becomes an identity link on the same user row, not a re-pointing migration. Guest session lifetime (~90 days) is a Supabase Auth refresh-token setting to verify, not a cookie `Max-Age` to set.
+- **"What draws you in?" chip list finalized as 9 data-grounded categories, no separate "beyond art" chip section for this MVP** (2026-09-25) — see §3.2 for the full list, matching methodology (cross-field keyword matching, not a single lookup field), and coverage verification (97.6%). Food/Travel/Fashion dropped for having no real support in the seeded pool.
+- **Free-text moderation: 280-char limit + prompt-structure mitigation + keyword blocklist, silent-drop on flag** (2026-09-25) — see §3.2. Deliberately not a dedicated moderation classifier call for MVP.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
