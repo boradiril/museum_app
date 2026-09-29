@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="flex flex-1 items-center justify-center bg-bg px-6 py-16">
@@ -13,12 +15,12 @@ export default function Home() {
           tour matched to your time and your interests.
         </p>
 
-        <button
-          type="button"
-          className="mt-8 w-full rounded-pill bg-cta py-3.5 font-semibold text-cta-text"
+        <Link
+          href="/interests"
+          className="mt-8 block w-full rounded-pill bg-cta py-3.5 text-center font-semibold text-cta-text"
         >
           Build my tour
-        </button>
+        </Link>
 
         <p className="mt-6 text-xs text-secondary">
           Phase 1 skeleton — design tokens wired, Supabase connected, deployed on
