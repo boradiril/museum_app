@@ -1,0 +1,356 @@
+{
+  "visitor": "f5cad8ad-d46c-4fdf-96b4-6d6f8a6c61c6",
+  "runs": [
+    {
+      "id": "A-single-interest",
+      "description": "One interest alone, short visit, highlights pace",
+      "input": {
+        "timeMinutes": 120,
+        "interests": [
+          "Animals in Art"
+        ],
+        "pace": "highlights",
+        "groupType": "solo"
+      },
+      "httpStatus": 200,
+      "response": {
+        "itineraryId": "1858e2d9-1293-4e37-a4ca-70014c9bf13c",
+        "stopCount": 13
+      },
+      "elapsedMs": 6710,
+      "stops": [
+        {
+          "position": 1,
+          "met_object_id": 544066,
+          "title": "Handle Depicting a Lion Subduing a Nubian",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "124"
+        },
+        {
+          "position": 2,
+          "met_object_id": 545537,
+          "title": "Hairpin with a Figure of a Hippopotamus",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "111"
+        },
+        {
+          "position": 3,
+          "met_object_id": 544748,
+          "title": "Statue of a scribe with a baboon",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "124"
+        },
+        {
+          "position": 4,
+          "met_object_id": 550767,
+          "title": "Cow's Head from a frontal representation of a cow emerging from a wall",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "127"
+        },
+        {
+          "position": 5,
+          "met_object_id": 548564,
+          "title": "Wall painting of a cat killing a serpent",
+          "artist": "Charles K. Wilkinson",
+          "matched_interest": "Animals in Art",
+          "gallery_location": "135"
+        },
+        {
+          "position": 6,
+          "met_object_id": 570698,
+          "title": "Bes on a column holding a knife",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "130"
+        },
+        {
+          "position": 7,
+          "met_object_id": 570309,
+          "title": "Falcon-headed sphinx recumbent on a pedestal with a ramp, and a feline(?) behind, possibly a gnomon for a shadow clock or instrument",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "134"
+        },
+        {
+          "position": 8,
+          "met_object_id": 545376,
+          "title": "A pendant depicting a ba-bird with outstretched wings",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "127"
+        },
+        {
+          "position": 9,
+          "met_object_id": 465324,
+          "title": "Spoon with a Panther",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "301"
+        },
+        {
+          "position": 10,
+          "met_object_id": 472849,
+          "title": "Panel with a Griffin",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "301"
+        },
+        {
+          "position": 11,
+          "met_object_id": 463419,
+          "title": "Aquamanile in the Form of a Crowned Centaur Fighting a Dragon",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "010"
+        },
+        {
+          "position": 12,
+          "met_object_id": 22098,
+          "title": "Helmet in the Shape of a Crouching Rabbit",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "377"
+        },
+        {
+          "position": 13,
+          "met_object_id": 22860,
+          "title": "Sallet in the Shape of a Lion's Head",
+          "artist": null,
+          "matched_interest": "Animals in Art",
+          "gallery_location": "373"
+        }
+      ]
+    },
+    {
+      "id": "B-two-non-overlapping",
+      "description": "Two non-overlapping interests (weapons + armor), longer visit, go-deep pace, couple",
+      "input": {
+        "timeMinutes": 180,
+        "interests": [
+          "Arms & Weapons",
+          "Armor & Shields"
+        ],
+        "pace": "go_deep",
+        "groupType": "couple"
+      },
+      "httpStatus": 200,
+      "response": {
+        "itineraryId": "699c0cd7-5b00-4573-aee9-2ed5c78afbc0",
+        "stopCount": 15
+      },
+      "elapsedMs": 8013,
+      "stops": [
+        {
+          "position": 1,
+          "met_object_id": 27576,
+          "title": "Model of a Basilisk (Cannon) for Emperor Charles V (1500–1558)",
+          "artist": "Pietro d'Arena",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "371"
+        },
+        {
+          "position": 2,
+          "met_object_id": 23198,
+          "title": "Armor from a Small Garniture for Field and Tournament",
+          "artist": "Kunz Lochner",
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "371"
+        },
+        {
+          "position": 3,
+          "met_object_id": 22950,
+          "title": "Armor for a Member of the Barberini Family",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "371"
+        },
+        {
+          "position": 4,
+          "met_object_id": 35695,
+          "title": "Close Helmet for a Cuirassier",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "371"
+        },
+        {
+          "position": 5,
+          "met_object_id": 22400,
+          "title": "Rondel for a Shaffron (Horse's Head Defense)",
+          "artist": "Kaspar Riederer",
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "373"
+        },
+        {
+          "position": 6,
+          "met_object_id": 27966,
+          "title": "Hand-and-a-Half Sword",
+          "artist": null,
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "373"
+        },
+        {
+          "position": 7,
+          "met_object_id": 23094,
+          "title": "Portions of a Parade Armor",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "374"
+        },
+        {
+          "position": 8,
+          "met_object_id": 27790,
+          "title": "Portions of a Costume Armor",
+          "artist": "Kolman Helmschmid",
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "374"
+        },
+        {
+          "position": 9,
+          "met_object_id": 35825,
+          "title": "Mask Visor in Form of a Human Face",
+          "artist": "Kolman Helmschmid",
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "374"
+        },
+        {
+          "position": 10,
+          "met_object_id": 24861,
+          "title": "Cased Set of a Flintlock Rifle, a Pair of Pistols, and Accessories",
+          "artist": "Nicolas Noël Boutet",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "375"
+        },
+        {
+          "position": 11,
+          "met_object_id": 24930,
+          "title": "Gun with Flintlock a la moda",
+          "artist": "Gabriel de Algora",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "375"
+        },
+        {
+          "position": 12,
+          "met_object_id": 22458,
+          "title": "Cuirass of a <i>Tankō</i>",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "377"
+        },
+        {
+          "position": 13,
+          "met_object_id": 22498,
+          "title": "Cuirass of a <i>Dō-maru</i>",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "377"
+        },
+        {
+          "position": 14,
+          "met_object_id": 21889,
+          "title": "Blade and Mounting for a Sword (Katana)",
+          "artist": "Naotane Taikei",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "378"
+        },
+        {
+          "position": 15,
+          "met_object_id": 638804,
+          "title": "Blades and Mountings for a Pair of Swords (Daishō)",
+          "artist": "Naotane Taikei",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "378"
+        }
+      ]
+    },
+    {
+      "id": "C-mix-with-free-text",
+      "description": "Two interests plus a free-text note; short visit, family group",
+      "input": {
+        "timeMinutes": 90,
+        "interests": [
+          "Sacred & Religious Art",
+          "Royalty & Power"
+        ],
+        "pace": "highlights",
+        "groupType": "family",
+        "freeText": "I love medieval kings and saints"
+      },
+      "httpStatus": 200,
+      "response": {
+        "itineraryId": "3fb22352-4dbd-4255-a1ff-4612c0f0af86",
+        "stopCount": 8
+      },
+      "elapsedMs": 5382,
+      "stops": [
+        {
+          "position": 1,
+          "met_object_id": 466822,
+          "title": "Head of a King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "304"
+        },
+        {
+          "position": 2,
+          "met_object_id": 468090,
+          "title": "Head of a King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "304"
+        },
+        {
+          "position": 3,
+          "met_object_id": 468219,
+          "title": "Head of a King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "304"
+        },
+        {
+          "position": 4,
+          "met_object_id": 468544,
+          "title": "Angel Carrying a Crown",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "304"
+        },
+        {
+          "position": 5,
+          "met_object_id": 464234,
+          "title": "Head of a Crozier",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "304"
+        },
+        {
+          "position": 6,
+          "met_object_id": 464683,
+          "title": "Head of a Crozier with a Serpent Devouring a Flower",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "304"
+        },
+        {
+          "position": 7,
+          "met_object_id": 26741,
+          "title": "Saint Michael and a Donor",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "306"
+        },
+        {
+          "position": 8,
+          "met_object_id": 34022,
+          "title": "Sculpture of a Kneeling Knight or King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "002"
+        }
+      ]
+    }
+  ]
+}

@@ -255,7 +255,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const stopRows = validStops.map((s) => {
+  // One stop per object per itinerary: keep the first occurrence in route
+  // order, then renumber positions so the route has no gaps.
+  const seenObjectIds = new Set<number>();
+  const uniqueStops = [...validStops]
+    .sort((a, b) => a.position - b.position)
+    .filter((s) => {
+      if (seenObjectIds.has(s.met_object_id)) return false;
+      seenObjectIds.add(s.met_object_id);
+      return true;
+    })
+    .map((s, i) => ({ ...s, position: i + 1 }));
+
+  const stopRows = uniqueStops.map((s) => {
     const obj = candidateById.get(s.met_object_id)!;
     return {
       itinerary_id: itinerary.id,
