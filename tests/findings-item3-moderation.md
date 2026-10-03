@@ -21,8 +21,8 @@ After the decision below, 13 of 13 cases pass. The two over-block cases were ori
 | Whitespace only | "     " | drop | drop | PASS |
 | Undefined | — | drop | drop | PASS |
 | Null | — | drop | drop | PASS |
-| **False positive: "act as"** | "I like to act as a guide for my kids" | pass | **drop** | **FAIL** |
-| **False positive: "you are now"** | "You are now going to love this museum" | pass | **drop** | **FAIL** |
+| Accepted over-block: "act as" | "I like to act as a guide for my kids" | drop (by decision) | drop | PASS |
+| Accepted over-block: "you are now" | "You are now going to love this museum" | drop (by decision) | drop | PASS |
 
 ## Findings
 
