@@ -86,9 +86,9 @@ export default function InterestsPage() {
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data.error || "Something went wrong building your tour.");
+        setError(data?.error || "Something went wrong on our side. Please try again.");
         return;
       }
       router.push(`/itinerary/${data.itineraryId}`);
@@ -232,11 +232,11 @@ export default function InterestsPage() {
           </div>
         )}
 
-        {error && <p className="mt-6 text-sm text-red-600">{error}</p>}
       </div>
 
       <div className="fixed inset-x-0 bottom-0 bg-bg px-6 pb-8 pt-4">
         <div className="mx-auto w-full max-w-md">
+          {error && <p role="alert" className="mb-3 text-center text-sm font-medium text-red-600">{error}</p>}
           <button
             type="button"
             onClick={handleSubmit}

@@ -155,7 +155,9 @@ Call the return_itinerary tool with your selected stops.`;
 export async function POST(request: Request) {
   let parsed: CurateRequestBody;
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => {
+      throw new Error("Request body must be valid JSON.");
+    });
     parsed = validateRequest(body);
   } catch (err) {
     return NextResponse.json(
