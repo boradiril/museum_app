@@ -8,7 +8,8 @@ import { createClient } from "@/lib/supabase/server";
  * client, so the paid content can't leak through the page source.
  */
 
-const PREVIEW_STOP_COUNT = 3;
+// Design (Figma) shows "Preview — 4 of 8"; CLAUDE.md §3.3 says 3. Confirm.
+const PREVIEW_STOP_COUNT = 4;
 
 export interface PreviewStop {
   position: number;
