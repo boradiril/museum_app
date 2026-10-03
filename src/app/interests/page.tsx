@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { INTEREST_CHIPS, type InterestChip } from "@/lib/interests";
 
@@ -15,7 +16,7 @@ const GROUP_OPTIONS: { value: GroupType; label: string }[] = [
 ];
 
 const MIN_MINUTES = 60;
-const MAX_MINUTES = 240;
+const MAX_MINUTES = 300;
 const STEP_MINUTES = 15;
 const FREE_TEXT_MAX = 280;
 
@@ -24,6 +25,14 @@ function formatTime(minutes: number): string {
   const mins = minutes % 60;
   if (mins === 0) return `${hrs} hr${hrs !== 1 ? "s" : ""}`;
   return `${hrs}h ${mins}m`;
+}
+
+function BackArrow() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 12H5M11 18l-6-6 6-6" />
+    </svg>
+  );
 }
 
 export default function InterestsPage() {
@@ -90,31 +99,38 @@ export default function InterestsPage() {
     }
   }
 
+  const chipClass = (selected: boolean) =>
+    selected
+      ? "rounded-pill bg-pill-selected-bg px-4 py-2.5 text-sm font-medium text-pill-selected-text"
+      : "rounded-pill border border-pill-border bg-surface px-4 py-2.5 text-sm font-medium text-primary";
+
   return (
     <main className="flex flex-1 flex-col bg-bg">
-      {/* §4.1/§2 principle 3: thin step indicator, input screens only. */}
-      <div className="mx-auto w-full max-w-md px-6 pt-6">
-        <div className="h-1 w-full rounded-pill bg-track-unfilled">
-          <div className="h-1 w-5/6 rounded-pill bg-track-filled" />
+      <div className="mx-auto w-full max-w-md flex-1 px-6 pb-44 pt-6">
+        <header className="flex items-center justify-between">
+          <Link href="/" aria-label="Back" className="flex h-9 w-9 items-center justify-center text-primary">
+            <BackArrow />
+          </Link>
+          <p className="text-sm text-secondary">Step 1 of 2</p>
+        </header>
+
+        {/* Two-segment step indicator; first segment filled for Step 1 (§4.1). */}
+        <div className="mt-4 flex gap-2">
+          <div className="h-1 flex-1 rounded-pill bg-track-filled" />
+          <div className="h-1 flex-1 rounded-pill bg-track-unfilled" />
         </div>
-      </div>
 
-      <div className="mx-auto w-full max-w-md flex-1 px-6 pb-32 pt-8">
-        <p className="text-sm font-medium tracking-widest text-secondary uppercase">
-          Plan your visit
-        </p>
-        <h1 className="mt-2 text-3xl font-bold text-primary">
-          What draws you in?
-        </h1>
+        <h1 className="mt-8 text-3xl font-bold text-primary">Plan your experience</h1>
+        <p className="mt-2 text-secondary">We&apos;ll fit the tour to your schedule.</p>
 
-        {/* Time slider */}
-        <div className="mt-8">
-          <label htmlFor="time" className="block text-sm font-medium text-secondary">
-            How much time do you have?
-          </label>
-          <p className="mt-1 text-2xl font-bold text-primary">
-            {formatTime(timeMinutes)}
-          </p>
+        {/* Time card */}
+        <div className="mt-6 rounded-card bg-surface px-6 py-5 shadow-sm">
+          <div className="flex items-baseline justify-between">
+            <label htmlFor="time" className="text-sm text-secondary">
+              Time at the museum
+            </label>
+            <p className="text-2xl font-bold text-primary">{formatTime(timeMinutes)}</p>
+          </div>
           <input
             id="time"
             type="range"
@@ -123,93 +139,65 @@ export default function InterestsPage() {
             step={STEP_MINUTES}
             value={timeMinutes}
             onChange={(e) => setTimeMinutes(Number(e.target.value))}
-            className="mt-3 w-full accent-[var(--cta-bg)]"
+            className="mt-5 w-full accent-[var(--cta-bg)]"
           />
         </div>
 
-        {/* Interest chips */}
-        <div className="mt-8">
-          <div className="flex flex-wrap gap-2">
-            {INTEREST_CHIPS.map((chip) => {
-              const selected = selectedInterests.includes(chip);
-              return (
-                <button
-                  key={chip}
-                  type="button"
-                  onClick={() => toggleInterest(chip)}
-                  className={
-                    selected
-                      ? "rounded-pill bg-pill-selected-bg px-4 py-2 text-sm font-medium text-pill-selected-text"
-                      : "rounded-pill border border-pill-border px-4 py-2 text-sm font-medium text-pill-border"
-                  }
-                >
-                  {chip}
-                </button>
-              );
-            })}
-          </div>
+        <h2 className="mt-8 text-2xl font-bold text-primary">What draws you in?</h2>
+        <p className="mt-1 text-secondary">Pick a few — you can adjust later.</p>
+
+        <div className="mt-5 flex flex-wrap gap-2.5">
+          {INTEREST_CHIPS.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              onClick={() => toggleInterest(chip)}
+              className={chipClass(selectedInterests.includes(chip))}
+            >
+              {chip}
+            </button>
+          ))}
         </div>
 
-        {/* Optional expandable panel */}
         {!expanded && (
           <button
             type="button"
             onClick={handleExpand}
-            className="mt-8 text-sm font-medium text-secondary underline underline-offset-2"
+            className="mt-6 flex items-center gap-2 text-sm font-medium text-secondary underline underline-offset-4"
           >
+            <span aria-hidden="true">✦</span>
             Tell us more about you — optional
           </button>
         )}
 
         {expanded && (
-          <div ref={panelRef} className="mt-8 space-y-8">
+          <div ref={panelRef} className="mt-6 space-y-8">
             <p className="text-sm font-medium text-secondary">
               Pace, group size, and your interests beyond art
             </p>
 
-            {/* Pace toggle */}
             <div>
               <p className="text-sm font-medium text-secondary">Pace</p>
               <div className="mt-2 flex gap-2">
                 {(["highlights", "go_deep"] as Pace[]).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => setPace(p)}
-                    className={
-                      pace === p
-                        ? "rounded-pill bg-pill-selected-bg px-4 py-2 text-sm font-medium text-pill-selected-text"
-                        : "rounded-pill border border-pill-border px-4 py-2 text-sm font-medium text-pill-border"
-                    }
-                  >
+                  <button key={p} type="button" onClick={() => setPace(p)} className={chipClass(pace === p)}>
                     {p === "highlights" ? "Highlights" : "Go deep"}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Group type */}
             <div>
               <p className="text-sm font-medium text-secondary">Who&apos;s visiting?</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {GROUP_OPTIONS.map((g) => (
-                  <button
-                    key={g.value}
-                    type="button"
-                    onClick={() => setGroupType(g.value)}
-                    className={
-                      groupType === g.value
-                        ? "rounded-pill bg-pill-selected-bg px-4 py-2 text-sm font-medium text-pill-selected-text"
-                        : "rounded-pill border border-pill-border px-4 py-2 text-sm font-medium text-pill-border"
-                    }
-                  >
+                  <button key={g.value} type="button" onClick={() => setGroupType(g.value)} className={chipClass(groupType === g.value)}>
                     {g.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Free text */}
             <div>
               <label htmlFor="freeText" className="text-sm font-medium text-secondary">
                 Anything else?
@@ -247,8 +235,7 @@ export default function InterestsPage() {
         {error && <p className="mt-6 text-sm text-red-600">{error}</p>}
       </div>
 
-      {/* Sticky CTA */}
-      <div className="sticky bottom-0 w-full border-t border-pill-border/10 bg-bg/95 px-6 py-4 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 bg-bg px-6 pb-8 pt-4">
         <div className="mx-auto w-full max-w-md">
           <button
             type="button"
@@ -258,6 +245,7 @@ export default function InterestsPage() {
           >
             {submitting ? "Building your tour..." : "Build my tour"}
           </button>
+          <p className="mt-3 text-center text-xs text-secondary">Defaults to a solo, highlights-paced tour</p>
         </div>
       </div>
     </main>
