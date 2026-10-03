@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { INTEREST_CHIPS, type InterestChip } from "@/lib/interests";
+import { INTEREST_CHIPS, isValidInterestChip, type InterestChip } from "@/lib/interests";
 
 type Pace = "highlights" | "go_deep";
 type GroupType = "solo" | "couple" | "family" | "group";
@@ -19,6 +19,69 @@ const MIN_MINUTES = 60;
 const MAX_MINUTES = 300;
 const STEP_MINUTES = 15;
 const FREE_TEXT_MAX = 280;
+
+// Session-scoped so a visitor's choices survive the trip to the itinerary and
+// back via "Edit", but don't leak into a new browsing session.
+const STORAGE_KEY = "muse.interests.v1";
+
+interface SavedInterests {
+  timeMinutes: number;
+  selectedInterests: InterestChip[];
+  expanded: boolean;
+  pace: Pace;
+  groupType: GroupType;
+  freeText: string;
+  mustSeeQuery: string;
+}
+
+// Remembers the last successful build and the exact inputs it came from, so
+// "Build my tour" can reuse that itinerary when nothing has changed.
+const LAST_BUILD_KEY = "muse.lastBuild.v1";
+
+interface LastBuild {
+  signature: string;
+  itineraryId: string;
+}
+
+function buildRequest(input: {
+  timeMinutes: number;
+  selectedInterests: InterestChip[];
+  pace: Pace;
+  groupType: GroupType;
+  freeText: string;
+  mustSeeQuery: string;
+}) {
+  return {
+    timeMinutes: input.timeMinutes,
+    interests: input.selectedInterests,
+    pace: input.pace,
+    groupType: input.groupType,
+    freeText: input.freeText.trim() || undefined,
+    mustSeeQuery: input.mustSeeQuery.trim() || undefined,
+  };
+}
+
+function signatureOf(request: ReturnType<typeof buildRequest>): string {
+  return JSON.stringify({ ...request, interests: [...request.interests].sort() });
+}
+
+function readLastBuild(): LastBuild | null {
+  try {
+    const raw = sessionStorage.getItem(LAST_BUILD_KEY);
+    return raw ? (JSON.parse(raw) as LastBuild) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readSaved(): Partial<SavedInterests> | null {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Partial<SavedInterests>) : null;
+  } catch {
+    return null;
+  }
+}
 
 function formatTime(minutes: number): string {
   const hrs = Math.floor(minutes / 60);
@@ -45,9 +108,47 @@ export default function InterestsPage() {
   const [mustSeeQuery, setMustSeeQuery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [restored, setRestored] = useState(false);
   const router = useRouter();
 
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Restore once on mount. Saving stays off until this has run, so the default
+  // values can't overwrite what's stored (React dev mode runs effects twice).
+  useEffect(() => {
+    const saved = readSaved();
+    setRestored(true);
+    if (!saved) return;
+    if (typeof saved.timeMinutes === "number" && saved.timeMinutes >= MIN_MINUTES && saved.timeMinutes <= MAX_MINUTES) {
+      setTimeMinutes(saved.timeMinutes);
+    }
+    if (Array.isArray(saved.selectedInterests)) {
+      setSelectedInterests(saved.selectedInterests.filter((c): c is InterestChip => typeof c === "string" && isValidInterestChip(c)));
+    }
+    if (saved.pace === "highlights" || saved.pace === "go_deep") setPace(saved.pace);
+    if (saved.groupType && GROUP_OPTIONS.some((g) => g.value === saved.groupType)) setGroupType(saved.groupType);
+    if (typeof saved.freeText === "string") setFreeText(saved.freeText.slice(0, FREE_TEXT_MAX));
+    if (typeof saved.mustSeeQuery === "string") setMustSeeQuery(saved.mustSeeQuery);
+    if (saved.expanded === true) setExpanded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      const snapshot: SavedInterests = {
+        timeMinutes,
+        selectedInterests,
+        expanded,
+        pace,
+        groupType,
+        freeText,
+        mustSeeQuery,
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    } catch {
+      // Storage unavailable (private mode, quota): selections just aren't kept.
+    }
+  }, [restored, timeMinutes, selectedInterests, expanded, pace, groupType, freeText, mustSeeQuery]);
 
   function toggleInterest(chip: InterestChip) {
     setSelectedInterests((prev) =>
@@ -71,25 +172,31 @@ export default function InterestsPage() {
       return;
     }
 
+    const request = buildRequest({ timeMinutes, selectedInterests, pace, groupType, freeText, mustSeeQuery });
+    const signature = signatureOf(request);
+    const last = readLastBuild();
+    if (last && last.signature === signature) {
+      router.push(`/itinerary/${last.itineraryId}`);
+      return;
+    }
+
     setSubmitting(true);
     try {
       const res = await fetch("/api/curate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          timeMinutes,
-          interests: selectedInterests,
-          pace,
-          groupType,
-          freeText: freeText.trim() || undefined,
-          mustSeeQuery: mustSeeQuery.trim() || undefined,
-        }),
+        body: JSON.stringify(request),
       });
 
       const data = await res.json().catch(() => null);
       if (!res.ok) {
         setError(data?.error || "Something went wrong on our side. Please try again.");
         return;
+      }
+      try {
+        sessionStorage.setItem(LAST_BUILD_KEY, JSON.stringify({ signature, itineraryId: data.itineraryId }));
+      } catch {
+        // Storage unavailable: the next submit will simply call curation again.
       }
       router.push(`/itinerary/${data.itineraryId}`);
     } catch {
