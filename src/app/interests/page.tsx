@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { INTEREST_CHIPS, type InterestChip } from "@/lib/interests";
 
 type Pace = "highlights" | "go_deep";
@@ -25,11 +26,6 @@ function formatTime(minutes: number): string {
   return `${hrs}h ${mins}m`;
 }
 
-interface CurateResult {
-  itineraryId: string;
-  stopCount: number;
-}
-
 export default function InterestsPage() {
   const [timeMinutes, setTimeMinutes] = useState(180);
   const [selectedInterests, setSelectedInterests] = useState<InterestChip[]>([]);
@@ -40,7 +36,7 @@ export default function InterestsPage() {
   const [mustSeeQuery, setMustSeeQuery] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<CurateResult | null>(null);
+  const router = useRouter();
 
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -60,7 +56,6 @@ export default function InterestsPage() {
 
   async function handleSubmit() {
     setError(null);
-    setResult(null);
 
     if (selectedInterests.length === 0) {
       setError("Pick at least one interest to build your tour.");
@@ -87,40 +82,12 @@ export default function InterestsPage() {
         setError(data.error || "Something went wrong building your tour.");
         return;
       }
-      setResult(data);
+      router.push(`/itinerary/${data.itineraryId}`);
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
-  }
-
-  // No itinerary preview screen (§3.3) yet — this is a temporary stand-in
-  // confirmation, not the designed screen. Replace once that's built.
-  if (result) {
-    return (
-      <main className="flex flex-1 items-center justify-center bg-bg px-6 py-16">
-        <div className="w-full max-w-md rounded-card bg-surface p-8 shadow-sm text-center">
-          <h1 className="text-2xl font-bold text-primary">Tour built!</h1>
-          <p className="mt-3 text-secondary">
-            {result.stopCount} stops selected for you.
-          </p>
-          <p className="mt-6 text-xs text-secondary break-all">
-            Itinerary ID: {result.itineraryId}
-          </p>
-          <p className="mt-4 text-xs text-secondary">
-            (Itinerary preview screen not built yet — this is a placeholder.)
-          </p>
-          <button
-            type="button"
-            onClick={() => setResult(null)}
-            className="mt-8 w-full rounded-pill border border-pill-border py-3 font-semibold text-primary"
-          >
-            Start over
-          </button>
-        </div>
-      </main>
-    );
   }
 
   return (
