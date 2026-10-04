@@ -67,8 +67,14 @@ export default async function ItineraryPage({
           </p>
         </div>
 
+        {preview.unlocked && (
+          <p className="mt-8 rounded-pill bg-pill-selected-bg px-4 py-2 text-center text-sm font-medium text-pill-selected-text">
+            Tour unlocked · valid all day
+          </p>
+        )}
+
         <p className="mt-8 text-xs font-medium uppercase tracking-wider text-secondary">
-          Preview — {preview.previewStops.length} of {preview.stopCount}
+          {preview.unlocked ? "All stops" : `Preview — ${preview.previewStops.length} of ${preview.stopCount}`}
         </p>
 
         <ul className="mt-4 space-y-5">
@@ -117,7 +123,7 @@ export default async function ItineraryPage({
 
       <div className="fixed inset-x-0 bottom-0 bg-bg px-6 pb-8 pt-4">
         <div className="mx-auto w-full max-w-md">
-          <StartTourButton />
+          <StartTourButton itineraryId={preview.itineraryId} unlocked={preview.unlocked} stopCount={preview.stopCount} />
         </div>
       </div>
     </main>

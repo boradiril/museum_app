@@ -22,6 +22,7 @@ export interface PreviewStop {
 
 export interface ItineraryPreview {
   itineraryId: string;
+  unlocked: boolean;
   stopCount: number;
   previewStops: PreviewStop[];
   lockedCount: number;
@@ -66,7 +67,7 @@ export async function getItineraryPreview(itineraryId: string): Promise<Itinerar
 
   const { data: itinerary, error: itineraryError } = await supabase
     .from("itineraries")
-    .select("id")
+    .select("id, unlocked_at")
     .eq("id", itineraryId)
     .maybeSingle();
 
@@ -86,10 +87,12 @@ export async function getItineraryPreview(itineraryId: string): Promise<Itinerar
   }
 
   const allStops = (stops ?? []) as StopRow[];
-  const previewRows = selectPreviewStops(allStops);
+  const unlocked = Boolean(itinerary.unlocked_at);
+  const previewRows = unlocked ? allStops : selectPreviewStops(allStops);
 
   return {
     itineraryId,
+    unlocked,
     stopCount: allStops.length,
     previewStops: previewRows.map((s) => ({
       position: s.position,
@@ -99,6 +102,6 @@ export async function getItineraryPreview(itineraryId: string): Promise<Itinerar
       galleryLocation: s.gallery_location,
       imageUrl: s.image_url,
     })),
-    lockedCount: allStops.length - previewRows.length,
+    lockedCount: unlocked ? 0 : allStops.length - previewRows.length,
   };
 }
