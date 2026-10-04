@@ -40,3 +40,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Local scratch copies of the seed script — kept, not tracked
+scripts/seed-met-objects copy.mjs
+scripts/seed-met-objects_test_reign.mjs
+scripts/seed-met-objects_test_van_gogh.mjs
+
+# Figma exports used as local layout references — not tracked
+design-reference/

@@ -1,0 +1,234 @@
+{
+  "visitor": "a41e5dc7-3601-49d1-acbf-789ce8c42ba7",
+  "runs": [
+    {
+      "id": "A-single-interest",
+      "description": "One interest alone, short visit, highlights pace",
+      "input": {
+        "timeMinutes": 120,
+        "interests": [
+          "Animals in Art"
+        ],
+        "pace": "highlights",
+        "groupType": "solo"
+      },
+      "httpStatus": 502,
+      "response": {
+        "error": "Claude returned an empty itinerary."
+      },
+      "elapsedMs": 6201,
+      "stops": null
+    },
+    {
+      "id": "B-two-non-overlapping",
+      "description": "Two non-overlapping interests (weapons + armor), longer visit, go-deep pace, couple",
+      "input": {
+        "timeMinutes": 180,
+        "interests": [
+          "Arms & Weapons",
+          "Armor & Shields"
+        ],
+        "pace": "go_deep",
+        "groupType": "couple"
+      },
+      "httpStatus": 200,
+      "response": {
+        "itineraryId": "e9db4a45-cc0c-444e-834d-661c875a9e04",
+        "stopCount": 13
+      },
+      "elapsedMs": 7816,
+      "stops": [
+        {
+          "position": 1,
+          "met_object_id": 27576,
+          "title": "Model of a Basilisk (Cannon) for Emperor Charles V (1500–1558)",
+          "artist": "Pietro d'Arena",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "371"
+        },
+        {
+          "position": 2,
+          "met_object_id": 23198,
+          "title": "Armor from a Small Garniture for Field and Tournament",
+          "artist": "Kunz Lochner",
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "371"
+        },
+        {
+          "position": 3,
+          "met_object_id": 22950,
+          "title": "Armor for a Member of the Barberini Family",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "371"
+        },
+        {
+          "position": 4,
+          "met_object_id": 35695,
+          "title": "Close Helmet for a Cuirassier",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "371"
+        },
+        {
+          "position": 5,
+          "met_object_id": 22282,
+          "title": "Vamplate (Hand Guard for a Lance)",
+          "artist": "Matthes Deutsch",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "373"
+        },
+        {
+          "position": 6,
+          "met_object_id": 27966,
+          "title": "Hand-and-a-Half Sword",
+          "artist": null,
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "373"
+        },
+        {
+          "position": 7,
+          "met_object_id": 24702,
+          "title": "Side Panel of a Flank Defense (Crupper) from a Horse Armor",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "373"
+        },
+        {
+          "position": 8,
+          "met_object_id": 23094,
+          "title": "Portions of a Parade Armor",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "374"
+        },
+        {
+          "position": 9,
+          "met_object_id": 35825,
+          "title": "Mask Visor in Form of a Human Face",
+          "artist": "Kolman Helmschmid",
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "374"
+        },
+        {
+          "position": 10,
+          "met_object_id": 22498,
+          "title": "Cuirass of a <i>Dō-maru</i>",
+          "artist": null,
+          "matched_interest": "Armor & Shields",
+          "gallery_location": "377"
+        },
+        {
+          "position": 11,
+          "met_object_id": 22090,
+          "title": "Blade for a Double-Edged Sword (<i>Ken</i>)",
+          "artist": null,
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "377"
+        },
+        {
+          "position": 12,
+          "met_object_id": 21889,
+          "title": "Blade and Mounting for a Sword (Katana)",
+          "artist": "Naotane Taikei",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "378"
+        },
+        {
+          "position": 13,
+          "met_object_id": 24861,
+          "title": "Cased Set of a Flintlock Rifle, a Pair of Pistols, and Accessories",
+          "artist": "Nicolas Noël Boutet",
+          "matched_interest": "Arms & Weapons",
+          "gallery_location": "375"
+        }
+      ]
+    },
+    {
+      "id": "C-mix-with-free-text",
+      "description": "Two interests plus a free-text note; short visit, family group",
+      "input": {
+        "timeMinutes": 90,
+        "interests": [
+          "Sacred & Religious Art",
+          "Royalty & Power"
+        ],
+        "pace": "highlights",
+        "groupType": "family",
+        "freeText": "I love medieval kings and saints"
+      },
+      "httpStatus": 200,
+      "response": {
+        "itineraryId": "193ec495-5cd9-49ea-8586-9de214cc89d4",
+        "stopCount": 8
+      },
+      "elapsedMs": 5588,
+      "stops": [
+        {
+          "position": 1,
+          "met_object_id": 466822,
+          "title": "Head of a King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "304"
+        },
+        {
+          "position": 2,
+          "met_object_id": 468090,
+          "title": "Head of a King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "304"
+        },
+        {
+          "position": 3,
+          "met_object_id": 468219,
+          "title": "Head of a King",
+          "artist": null,
+          "matched_interest": "Royalty & Power",
+          "gallery_location": "304"
+        },
+        {
+          "position": 4,
+          "met_object_id": 468544,
+          "title": "Angel Carrying a Crown",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "304"
+        },
+        {
+          "position": 5,
+          "met_object_id": 464683,
+          "title": "Head of a Crozier with a Serpent Devouring a Flower",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "304"
+        },
+        {
+          "position": 6,
+          "met_object_id": 464234,
+          "title": "Head of a Crozier",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "304"
+        },
+        {
+          "position": 7,
+          "met_object_id": 474395,
+          "title": "Relief of a Bishop",
+          "artist": null,
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "019"
+        },
+        {
+          "position": 8,
+          "met_object_id": 471950,
+          "title": "Plaque from a Reliquary",
+          "artist": "Master of the Virgin Mary's Reliquary Casket",
+          "matched_interest": "Sacred & Religious Art",
+          "gallery_location": "014"
+        }
+      ]
+    }
+  ]
+}

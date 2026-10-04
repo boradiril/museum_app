@@ -39,34 +39,37 @@ interface ItineraryStopResult {
   matched_interest: string;
 }
 
-const CURATE_TOOL: Anthropic.Tool = {
-  name: "return_itinerary",
-  description: "Return the curated museum tour itinerary.",
-  input_schema: {
-    type: "object",
-    properties: {
-      stops: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            met_object_id: {
-              type: "integer",
-              description: "Must be an id from the candidate list — never invent one.",
+function buildCurateTool(interests: string[]): Anthropic.Tool {
+  return {
+    name: "return_itinerary",
+    description: "Return the curated museum tour itinerary.",
+    input_schema: {
+      type: "object",
+      properties: {
+        stops: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              met_object_id: {
+                type: "integer",
+                description: "Must be an id from the candidate list — never invent one.",
+              },
+              position: { type: "integer", description: "1-indexed route order." },
+              matched_interest: {
+                type: "string",
+                enum: interests,
+                description: "Must be exactly one of the visitor's selected interests.",
+              },
             },
-            position: { type: "integer", description: "1-indexed route order." },
-            matched_interest: {
-              type: "string",
-              description: "Which of the visitor's selected interests this stop matches.",
-            },
+            required: ["met_object_id", "position", "matched_interest"],
           },
-          required: ["met_object_id", "position", "matched_interest"],
         },
       },
+      required: ["stops"],
     },
-    required: ["stops"],
-  },
-};
+  };
+}
 
 function validateRequest(body: unknown): CurateRequestBody {
   if (typeof body !== "object" || body === null) {
@@ -152,7 +155,9 @@ Call the return_itinerary tool with your selected stops.`;
 export async function POST(request: Request) {
   let parsed: CurateRequestBody;
   try {
-    const body = await request.json();
+    const body = await request.json().catch(() => {
+      throw new Error("Request body must be valid JSON.");
+    });
     parsed = validateRequest(body);
   } catch (err) {
     return NextResponse.json(
@@ -178,11 +183,12 @@ export async function POST(request: Request) {
   const prompt = buildPrompt(parsed, sanitizedFreeText, candidates.map(toCandidateSummary));
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const curateTool = buildCurateTool(parsed.interests);
 
   const response = await anthropic.messages.create({
     model: "claude-sonnet-5",
     max_tokens: 4096,
-    tools: [CURATE_TOOL],
+    tools: [curateTool],
     tool_choice: { type: "tool", name: "return_itinerary" },
     messages: [{ role: "user", content: prompt }],
   });
@@ -217,9 +223,14 @@ export async function POST(request: Request) {
   }
 
   // Validate every returned met_object_id actually came from the candidate
-  // set — Claude was instructed not to invent ids, but don't trust blindly.
+  // set, and matched_interest is exactly one of the selected chips — the
+  // enum constraint on the tool schema strongly guides this, but don't
+  // trust it blindly either.
   const candidateById = new Map(candidates.map((c) => [c.met_object_id, c]));
-  const validStops = toolInput.stops.filter((s) => candidateById.has(s.met_object_id));
+  const interestSet = new Set<string>(parsed.interests);
+  const validStops = toolInput.stops.filter(
+    (s) => candidateById.has(s.met_object_id) && interestSet.has(s.matched_interest),
+  );
   if (validStops.length === 0) {
     return NextResponse.json({ error: "Claude returned no valid candidate ids." }, { status: 502 });
   }
@@ -246,7 +257,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const stopRows = validStops.map((s) => {
+  // One stop per object per itinerary: keep the first occurrence in route
+  // order, then renumber positions so the route has no gaps.
+  const seenObjectIds = new Set<number>();
+  const uniqueStops = [...validStops]
+    .sort((a, b) => a.position - b.position)
+    .filter((s) => {
+      if (seenObjectIds.has(s.met_object_id)) return false;
+      seenObjectIds.add(s.met_object_id);
+      return true;
+    })
+    .map((s, i) => ({ ...s, position: i + 1 }));
+
+  const stopRows = uniqueStops.map((s) => {
     const obj = candidateById.get(s.met_object_id)!;
     return {
       itinerary_id: itinerary.id,
