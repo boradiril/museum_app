@@ -78,6 +78,12 @@
 - No tap-outside-to-dismiss — require explicit cancel (protects an in-progress transaction from accidental loss).
 - On success: sheet content transforms in place (Smart Animate on internal content, not a new sheet) to a checkmark + "Tour unlocked" confirmation, then either dismisses back to the now-unlocked itinerary or chains into the account prompt sheet.
 
+**RESOLVED 2026-10-04 — payment decisions (Figma 01-payment is the layout reference):**
+- **Payment UI: Stripe Payment Element inside the bottom sheet**, with Apple Pay / Google Pay as the primary button and "Pay with card" as the secondary. Stays on the page (no redirect), per §2 principle 6. Card details go to Stripe directly, not through our server. Apple Pay requires the domain verified in Stripe, so it's tested on a Vercel preview, not `localhost`.
+- **Price: $4.99 per tour** (placeholder, changeable).
+- **Duration shown on the sheet and preview: the time budget the visitor chose on the slider** ("N stops · est. Xh Ym", "Fits your X hrs"). The time budget is stored on the itinerary; a per-stop duration estimate is deferred with the pacing decision (see §7).
+- Figma 02/03 (save-to-account prompt, "You're all set") are Phase 6 scope, not payment.
+
 ### 3.5 Unlocked Itinerary (post-payment)
 - "Tour unlocked · valid all day" banner (temporary/dismissible).
 - All stops now shown with a small audio-badge icon (unlocked indicator) instead of a lock icon.
@@ -304,6 +310,7 @@ Reordered from the original numeric draft: data layer + guest session moved up (
 - **Build order: data layer/guest sessions before screens; account creation after payment**, not in original numeric order — see Section 6.
 - **Account-prompt sheet buttons are bold/filled**, matching the payment sheet's visual weight (Section 3.6) — "Not now" + tap-outside-to-dismiss carry the lower-stakes signal instead of button styling.
 - **Guest identity: Supabase Anonymous Auth, not a hand-rolled `guest_session_id` column/cookie** (2026-09-14) — see §5.3 for the full reasoning. `itineraries`/`purchases`/`stops` RLS is uniform `auth.uid() = user_id` for guests and signed-in users alike; account creation becomes an identity link on the same user row, not a re-pointing migration. Guest session lifetime (~90 days) is a Supabase Auth refresh-token setting to verify, not a cookie `Max-Age` to set.
+- **Payment decisions (2026-10-04):** Stripe Payment Element inside the bottom sheet (Apple/Google Pay primary, card secondary, no redirect); $4.99 placeholder price; sheet and preview show the visitor's chosen time budget. See §3.4.
 - **"What draws you in?" chip list finalized as 9 data-grounded categories, no separate "beyond art" chip section for this MVP** (2026-09-25) — see §3.2 for the full list, matching methodology (cross-field keyword matching, not a single lookup field), and coverage verification (97.6%). Food/Travel/Fashion dropped for having no real support in the seeded pool.
 - **Free-text moderation: 280-char limit + prompt-structure mitigation + keyword blocklist, silent-drop on flag** (2026-09-25) — see §3.2. Deliberately not a dedicated moderation classifier call for MVP.
 
