@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 const PRICE_LABEL = "$4.99";
@@ -21,6 +21,12 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount }: Pr
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [beginNote, setBeginNote] = useState<string | null>(null);
+  const dragStartY = useRef<number | null>(null);
+
+  function closeSheet() {
+    setSheetOpen(false);
+    setError(null);
+  }
 
   async function pay() {
     setError(null);
@@ -71,9 +77,26 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount }: Pr
       </button>
 
       {sheetOpen && (
-        // §3.4: no tap-outside-to-dismiss; the visitor must cancel explicitly.
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="unlock-title">
-          <div className="w-full max-w-md rounded-t-[28px] bg-surface px-6 pb-8 pt-4 shadow-xl">
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="unlock-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !paying) closeSheet();
+          }}
+        >
+          <div
+            className="w-full max-w-md rounded-t-[28px] bg-surface px-6 pb-8 pt-4 shadow-xl"
+            onTouchStart={(e) => {
+              dragStartY.current = e.touches[0].clientY;
+            }}
+            onTouchEnd={(e) => {
+              const start = dragStartY.current;
+              dragStartY.current = null;
+              if (start !== null && e.changedTouches[0].clientY - start > 80 && !paying) closeSheet();
+            }}
+          >
             <div className="mx-auto h-1 w-10 rounded-pill bg-track-unfilled" />
             <h2 id="unlock-title" className="mt-6 text-2xl font-bold text-primary">
               Unlock your audio tour
@@ -91,15 +114,15 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount }: Pr
               disabled={paying}
               className="mt-6 w-full rounded-pill bg-cta py-3.5 font-semibold text-cta-text disabled:opacity-60"
             >
-              {paying ? "Processing..." : `Pay ${PRICE_LABEL}`}
+              {paying ? "Processing..." : "Apple Pay"}
             </button>
             <button
               type="button"
-              onClick={() => setSheetOpen(false)}
+              onClick={pay}
               disabled={paying}
-              className="mt-3 w-full rounded-pill border border-pill-border py-3.5 font-semibold text-primary disabled:opacity-60"
+              className="mt-3 w-full rounded-pill border border-pill-border bg-surface py-3.5 font-semibold text-primary disabled:opacity-60"
             >
-              Cancel
+              {paying ? "Processing..." : "Pay with card"}
             </button>
 
             {error && (
