@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatDuration } from "@/lib/time";
 
 const PRICE_LABEL = "$4.99";
 
@@ -9,13 +10,14 @@ interface Props {
   itineraryId: string;
   unlocked: boolean;
   stopCount: number;
+  timeMinutes: number | null;
 }
 
 /**
  * Footer CTA. Before payment: "Start tour" opens the payment sheet (§3.4).
  * After payment: "Begin tour" (in-museum mode is a later phase, so it only says so).
  */
-export default function StartTourButton({ itineraryId, unlocked, stopCount }: Props) {
+export default function StartTourButton({ itineraryId, unlocked, stopCount, timeMinutes }: Props) {
   const router = useRouter();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [paying, setPaying] = useState(false);
@@ -101,7 +103,9 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount }: Pr
             <h2 id="unlock-title" className="mt-6 text-2xl font-bold text-primary">
               Unlock your audio tour
             </h2>
-            <p className="mt-1 text-sm text-secondary">{stopCount} stops · valid all day</p>
+            <p className="mt-1 text-sm text-secondary">
+              {stopCount} stops{timeMinutes !== null ? ` · ${formatDuration(timeMinutes)}` : ""} · valid all day
+            </p>
 
             <div className="mt-5 flex items-center justify-between border-y border-track-unfilled py-4">
               <span className="text-secondary">Total</span>

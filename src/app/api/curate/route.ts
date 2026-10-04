@@ -246,7 +246,7 @@ export async function POST(request: Request) {
 
   const { data: itinerary, error: itineraryError } = await supabase
     .from("itineraries")
-    .insert({ user_id: user.id })
+    .insert({ user_id: user.id, time_minutes: parsed.timeMinutes })
     .select()
     .single();
 

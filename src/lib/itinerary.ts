@@ -23,6 +23,7 @@ export interface PreviewStop {
 export interface ItineraryPreview {
   itineraryId: string;
   unlocked: boolean;
+  timeMinutes: number | null;
   stopCount: number;
   previewStops: PreviewStop[];
   lockedCount: number;
@@ -67,7 +68,7 @@ export async function getItineraryPreview(itineraryId: string): Promise<Itinerar
 
   const { data: itinerary, error: itineraryError } = await supabase
     .from("itineraries")
-    .select("id, unlocked_at")
+    .select("id, unlocked_at, time_minutes")
     .eq("id", itineraryId)
     .maybeSingle();
 
@@ -93,6 +94,7 @@ export async function getItineraryPreview(itineraryId: string): Promise<Itinerar
   return {
     itineraryId,
     unlocked,
+    timeMinutes: itinerary.time_minutes ?? null,
     stopCount: allStops.length,
     previewStops: previewRows.map((s) => ({
       position: s.position,

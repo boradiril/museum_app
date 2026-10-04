@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getItineraryPreview } from "@/lib/itinerary";
+import { formatDuration } from "@/lib/time";
 import StartTourButton from "./StartTourButton";
 
 function ChevronLeft() {
@@ -60,11 +61,24 @@ export default async function ItineraryPage({
           <p className="text-xs text-secondary">Route map — coming in a later phase</p>
         </div>
 
-        {/* Summary card — stop count only; time budget isn't stored yet. */}
+        {/* Summary card. Duration is the visitor's chosen time budget, a placeholder
+            until itinerary timing is designed (CLAUDE.md §7). */}
         <div className="mt-4 flex items-center justify-between rounded-card bg-surface px-5 py-4 shadow-sm">
           <p className="text-base">
             <span className="font-bold text-primary">{preview.stopCount} stops</span>
+            {preview.timeMinutes !== null && (
+              <span className="text-secondary"> · {formatDuration(preview.timeMinutes)}</span>
+            )}
           </p>
+          {preview.unlocked ? (
+            <p className="text-sm font-medium text-pill-selected-text">Ready to begin</p>
+          ) : (
+            preview.timeMinutes !== null && (
+              <p className="text-sm font-medium text-pill-selected-text">
+                Fits your {formatDuration(preview.timeMinutes)}
+              </p>
+            )
+          )}
         </div>
 
         {preview.unlocked && (
@@ -123,7 +137,7 @@ export default async function ItineraryPage({
 
       <div className="fixed inset-x-0 bottom-0 bg-bg px-6 pb-8 pt-4">
         <div className="mx-auto w-full max-w-md">
-          <StartTourButton itineraryId={preview.itineraryId} unlocked={preview.unlocked} stopCount={preview.stopCount} />
+          <StartTourButton itineraryId={preview.itineraryId} unlocked={preview.unlocked} stopCount={preview.stopCount} timeMinutes={preview.timeMinutes} />
         </div>
       </div>
     </main>
