@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatDuration } from "@/lib/time";
+import AccountPromptSheet from "./AccountPromptSheet";
 
 const PRICE_LABEL = "$4.99";
 
@@ -23,7 +24,21 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount, time
   const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [beginNote, setBeginNote] = useState<string | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountNote, setAccountNote] = useState<string | null>(null);
   const dragStartY = useRef<number | null>(null);
+
+  function handleAccountChoice() {
+    // Sign-in isn't built yet; this only confirms the tap landed.
+    setAccountNote("Saving to an account is coming in the next step.");
+  }
+
+  const accountSheet = accountOpen && (
+    <AccountPromptSheet
+      onClose={() => setAccountOpen(false)}
+      onChoose={handleAccountChoice}
+    />
+  );
 
   function closeSheet() {
     setSheetOpen(false);
@@ -45,6 +60,7 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount, time
         return;
       }
       setSheetOpen(false);
+      setAccountOpen(true);
       router.refresh();
     } catch {
       setError("Couldn't reach the server. Check your connection and try again.");
@@ -64,6 +80,10 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount, time
           Begin tour
         </button>
         {beginNote && <p className="mt-3 text-center text-sm text-secondary">{beginNote}</p>}
+        {accountSheet}
+        {accountNote && !accountOpen && (
+          <p className="mt-3 text-center text-sm text-secondary">{accountNote}</p>
+        )}
       </div>
     );
   }
@@ -77,6 +97,8 @@ export default function StartTourButton({ itineraryId, unlocked, stopCount, time
       >
         Start tour
       </button>
+
+      {accountSheet}
 
       {sheetOpen && (
         <div
